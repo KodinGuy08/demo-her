@@ -13,18 +13,6 @@ human_agent_action = 0
 human_wants_restart = False
 human_sets_pause = False
 
-def key_press(key, mod):
-    global human_agent_action, human_wants_restart, human_sets_pause
-    if key==0xff0d: human_wants_restart = True
-    if key==ord("e"): human_sets_pause = not human_sets_pause
-
-    if key == ord("a"):
-        human_agent_action = a
-
-def key_release(key, mod):
-    global human_agent_action
-    if human_agent_action == a:
-        human_agent_action = 0
 env = gym.make("FetchPickAndPlace-v1")
 
 #env.unwrapped.viewer.window.on_key_press = key_press
@@ -45,7 +33,6 @@ tau = 0.001
 
 dense_layers = [256, 256]
 
-MANUAL_CONTROL = False
 DEMO_REFILL = False
 
 agent = DDPG(alpha=lr_actor, beta=lr_critic, input_dims=[n_states], goal_dims=[n_goal], tau=tau, env=env,
@@ -59,46 +46,6 @@ start = time.time()
 PERIOD_OF_TIME = 7200*4 # 120 min
 
 print("### Start Learning Mode ###")
-
-def render():
-    while True:
-        env.render()
-def parse(inp):
-    global ep_run
-    out = []
-    c = 0
-
-    if (inp == "r"):
-        ep_run = False
-        return [0,0,0,0]
-
-    if "/" in inp:
-        rep = 1
-        v = inp.split("/")
-
-        if len(v) == 3:
-            rep = int(v[2])
-
-        while not c == 4:
-            if c+1 == int(v[0]):
-                out.append(float(v[1]))
-            else:
-                out.append(0)
-            c = c + 1
-
-        return out, rep
-
-    for i in inp.split(","):
-        out.append(float(i))
-        c = c + 1
-    while not c == 4:
-        out.append(0)
-        c = c + 1
-    return out, 1
-
-x = threading.Thread(target=render)
-if MANUAL_CONTROL:
-    x.start()
 
 ep_run = False
 #Done no longer counts
@@ -138,25 +85,15 @@ for ep in range(40000):
         if is_env_on.exists() or ep > 20000 or True:
             env.render()
 
-        #print(state_['achieved_goal'][1] - goal[1])
         ng = agent.subtract_array(state_['achieved_goal'].copy(), goal.copy())
 
-        #print("Goal:", ng)
-        #print("DGoal:", state_['desired_goal'])
-        #print("AGoal:", state_['achieved_goal'])
-
-        if MANUAL_CONTROL:
-            action, a_c = parse(input("IN:"))#agent.choose_action(state, ng)
-        else:
-            action, a_c = agent.choose_action(state, ng), 1
+        action, a_c = agent.choose_action(state, ng), 1
 
         actions.append(action)
 
         for a in range(a_c):
             new_state, reward, done, info = env.step(action)
 
-        if MANUAL_CONTROL:
-            print(info, reward, done, "\n", ng)
         state_ = new_state.copy()
 
         score.append(info['is_success'])
