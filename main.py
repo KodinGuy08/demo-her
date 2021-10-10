@@ -49,7 +49,7 @@ MANUAL_CONTROL = False
 DEMO_REFILL = False
 
 agent = DDPG(alpha=lr_actor, beta=lr_critic, input_dims=[n_states], goal_dims=[n_goal], tau=tau, env=env,
-              batch_size=1024, layer_size=dense_layers, n_actions=n_actions,
+              batch_size=1536, layer_size=dense_layers, n_actions=n_actions,
               chkpt_dir='tmp/ddpg', Datagen=not MANUAL_CONTROL)
 
 import time
@@ -131,11 +131,11 @@ for ep in range(40000):
     score = []
 
     ep_time = time.time()
-    if ep == 19000:
+    if ep == 19000 or False:
         inp = input("Waiting for confirm")
 
     while ep_run:
-        if is_env_on.exists() or ep > 20000:
+        if is_env_on.exists() or ep > 20000 or True:
             env.render()
 
         #print(state_['achieved_goal'][1] - goal[1])
@@ -185,21 +185,21 @@ for ep in range(40000):
 
         agent.remember(states[step], actions[step], r, new_states[step], int(dones[step]),
                         ng)
-    for i in range(0, 4):
-        if 4 > len(a_goals):
-            break
-        g = a_goals[-(i+1)].copy()
-        s = states[-(i+1)].copy()
-        a = actions[-(i+1)].copy()
-        ns = new_states[-(i+1)].copy()
-        d = dones[-(i+1)].copy()
+        for i in range(0, 4):
+            if 4 > len(a_goals):
+                break
+            g = a_goals[-(i+1)].copy()
+            s = states[-(i+1)].copy()
+            a = actions[-(i+1)].copy()
+            ns = new_states[-(i+1)].copy()
+            d = dones[-(i+1)]
 
-        info = {"is_success":0.0}
-        goal_ = g.copy()
-        r1 = env.compute_reward(g, g, info)
+            info = {"is_success":1.0}
+            goal_ = g.copy()
+            r1 = env.compute_reward(g, g, info)
 
-        agent.remember(s, a, r1, ns, 1,
-                       agent.subtract_array(g, goal_))
+            agent.remember(s, a, r1, ns, 1,
+                           agent.subtract_array(g, goal_))
     if ep % 1000 == 0 and ep > 0 and DEMO_REFILL:
         agent.datagen()
 
@@ -208,7 +208,7 @@ for ep in range(40000):
     
 
     for i in range(step_count):
-        agent.learn()
+        pass#agent.learn()
 
     if ep % 25 == 0 and ep > 0:
         agent.save_models()
@@ -230,7 +230,7 @@ for ep in range(40000):
 
     print()
     plot_learning_curve([i for i in range(ep+1)], success_rates, "out_success_rate.png")
-    plot_learning_curve([i for i in range(ep+1)], success_rates, "out_fake_test.png", False)
+    #plot_learning_curve([i for i in range(ep+1)], success_rates, "out_fake_test.png", False)
     plot_learning_curve([i for i in range(ep+1)], reward_q, "out_reward.png", False)
-    plot_learning_curve([i for i in range(ep+1)], reward_q, "out_reward_.png")
+    #plot_learning_curve([i for i in range(ep+1)], reward_q, "out_reward_.png")
 
