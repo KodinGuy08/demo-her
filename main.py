@@ -37,7 +37,7 @@ DEMO_REFILL = False
 
 agent = DDPG(alpha=lr_actor, beta=lr_critic, input_dims=[n_states], goal_dims=[n_goal], tau=tau, env=env,
               batch_size=1536, layer_size=dense_layers, n_actions=n_actions,
-              chkpt_dir='tmp/ddpg', Datagen=not MANUAL_CONTROL)
+              chkpt_dir='tmp/ddpg', Datagen=True)
 
 import time
 
