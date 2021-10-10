@@ -83,7 +83,7 @@ for ep in range(40000):
 
     while ep_run:
         if is_env_on.exists() or ep > 20000 or True:
-            env.render()
+            pass
 
         ng = agent.subtract_array(state_['achieved_goal'].copy(), goal.copy())
 
