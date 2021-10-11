@@ -1,7 +1,7 @@
 import os, time
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import numpy as np
-from tensorflow.initializers import random_uniform
+from import tensorflow.compat.v1.initializers import random_uniform
 
 import DataGen as DG
 
@@ -314,7 +314,7 @@ class Agent(object):
 
         self.update_network_parameters(first=True)
 
-        #self.load_models()
+        self.load_models()
 
         #if Datagen:
         #    for i in range(124):
@@ -344,37 +344,27 @@ class Agent(object):
         return mu_prime[0]
 
     def learn(self):
-        demo_batch_size = 132
+        demo_batch_size = 196
         state, action, reward, new_state, done, goal = [None]*6
 
         if self.memory.mem_cntr < self.batch_size:
-            demo_batch_size = self.batch_size
-            if self.demo_mem.mem_cntr < self.batch_size:
-                return
-        else:
-            state, action, reward, new_state, done, goal = \
-                self.memory.sample_buffer(self.batch_size - demo_batch_size)
+            return
 
-        if not self.demo_mem.mem_cntr < self.batch_size:
+        state, action, reward, new_state, done, goal = \
+            self.memory.sample_buffer(self.batch_size - demo_batch_size)
 
-            dem_size = demo_batch_size
-            if self.memory.mem_cntr < self.batch_size:
-                dem_size = self.batch_size
-            stated, actiond, rewardd, new_stated, doned, goald = self.demo_mem.sample_buffer(dem_size)
+        dem_size = demo_batch_size
+        stated, actiond, rewardd, new_stated, doned, goald = self.demo_mem.sample_buffer(dem_size)
 
-            if not self.memory.mem_cntr < self.batch_size:
-                def combine(in1, in2):
-                    return np.concatenate([in1.copy(), in2.copy()])
+        def combine(in1, in2):
+            return np.concatenate([in1.copy(), in2.copy()])
 
-                state = combine(state, stated)
-                action = combine(action, actiond)
-                reward = combine(reward, rewardd)
-                new_state = combine(new_state, new_stated)
-                done = combine(done, doned)
-                goal = combine(goal, goald)
-            else:
-                state, action, reward, new_state, done, goal = \
-                    stated, actiond, rewardd, new_stated, doned, goald
+        state = combine(state, stated)
+        action = combine(action, actiond)
+        reward = combine(reward, rewardd)
+        new_state = combine(new_state, new_stated)
+        done = combine(done, doned)
+        goal = combine(goal, goald)
 
         critic_value_ = self.target_critic.predict(new_state, goal,
                                            self.target_actor.predict(new_state, goal))
@@ -446,5 +436,5 @@ class Agent(object):
                 g = np.array(obs[step]['achieved_goal']).copy()
 
                 #print("\n\n", "## LOG ##", "\n", goal, "\n", g, "\n", self.subtract_array(g, goal))
-                self.demo_mem.store_transition(ob, act, reward, ob_, int(reward > 0.99), self.subtract_array(g, goal))
+                self.demo_mem.store_transition(ob, act, reward, ob_, 1, self.subtract_array(g, goal))
 
