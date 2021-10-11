@@ -1,7 +1,7 @@
 import os, time
 import tensorflow.compat.v1 as tf
 import numpy as np
-from import tensorflow.compat.v1.initializers import random_uniform
+from tensorflow.compat.v1.initializers import random_uniform
 
 import DataGen as DG
 
