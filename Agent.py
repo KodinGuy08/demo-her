@@ -1,9 +1,12 @@
 import os, time
 import tensorflow.compat.v1 as tf
 import numpy as np
-from tensorflow.compat.v1.initializers import random_uniform
+from import tensorflow.compat.v1.initializers import random_uniform
 
 import DataGen as DG
+
+tf.disable_v2_behavior()
+tf.disable_eager_execution()
 
 class OUActionNoise(object):
     def __init__(self, mu, sigma=0.15, theta=.2, dt=1e-2, x0=None):
