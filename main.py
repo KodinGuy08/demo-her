@@ -78,8 +78,6 @@ for ep in range(40000):
     score = []
 
     ep_time = time.time()
-    if ep == 19000 or False:
-        inp = input("Waiting for confirm")
 
     while ep_run:
         if is_env_on.exists() or ep > 20000 or True:
@@ -142,6 +140,7 @@ for ep in range(40000):
 
         for i in range(100):
             agent.learn()
+
     
 
     for i in range(step_count):
