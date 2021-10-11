@@ -317,7 +317,7 @@ class Agent(object):
 
         self.update_network_parameters(first=True)
 
-        self.load_models()
+        #self.load_models()
 
         #if Datagen:
         #    for i in range(124):
