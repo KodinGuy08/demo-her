@@ -144,7 +144,7 @@ for ep in range(40000):
     
 
     for i in range(step_count):
-        pass#agent.learn()
+        agent.learn()
 
     if ep % 25 == 0 and ep > 0:
         agent.save_models()
