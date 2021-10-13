@@ -151,7 +151,7 @@ for ep in range(40000):
     
 
     for i in range(step_count):
-        if not arg[3] == "1":
+        if not args[3] == "1":
             agent.learn()
 
     if ep % 25 == 0 and ep > 0:
