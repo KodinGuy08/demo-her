@@ -268,7 +268,7 @@ class Critic(object):
 class Agent(object):
     def __init__(self, alpha, beta, input_dims, goal_dims, tau, env, gamma=0.99, n_actions=2,
                  max_size=1000000, layer_size=[400, 300],
-                 batch_size=64, chkpt_dir='tmp/ddpg', Datagen=False):
+                 batch_size=64, chkpt_dir='tmp/ddpg', Datagen=False, load=True):
         self.env = env
         self.epsilon = 0
 
@@ -317,7 +317,8 @@ class Agent(object):
 
         self.update_network_parameters(first=True)
 
-        #self.load_models()
+        if load:
+            self.load_models()
 
         #if Datagen:
         #    for i in range(124):

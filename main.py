@@ -35,9 +35,13 @@ dense_layers = [256, 256]
 
 DEMO_REFILL = False
 
+import sys
+
+args = sys.argv
+
 agent = DDPG(alpha=lr_actor, beta=lr_critic, input_dims=[n_states], goal_dims=[n_goal], tau=tau, env=env,
               batch_size=1536, layer_size=dense_layers, n_actions=n_actions,
-              chkpt_dir='drive/MyDrive/tmp/ddpg', Datagen=True)
+              chkpt_dir=args[1], Datagen=True, load=(args[2]=="1"))
 
 import time
 
@@ -91,6 +95,7 @@ for ep in range(40000):
 
         for a in range(a_c):
             new_state, reward, done, info = env.step(action)
+        env.render()
 
         state_ = new_state.copy()
 
@@ -144,7 +149,8 @@ for ep in range(40000):
     
 
     for i in range(step_count):
-        agent.learn()
+        #agent.learn()
+        pass
 
     if ep % 25 == 0 and ep > 0:
         agent.save_models()
