@@ -95,7 +95,9 @@ for ep in range(40000):
 
         for a in range(a_c):
             new_state, reward, done, info = env.step(action)
-        env.render()
+
+        if args[3] == "1":
+            env.render()
 
         state_ = new_state.copy()
 
