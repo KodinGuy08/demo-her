@@ -175,6 +175,6 @@ for ep in range(40000):
     print()
     plot_learning_curve([i for i in range(ep+1)], success_rates, "out_success_rate.png")
     #plot_learning_curve([i for i in range(ep+1)], success_rates, "out_fake_test.png", False)
-    plot_learning_curve([i for i in range(ep+1)], reward_q, "out_reward.png", False)
+    #plot_learning_curve([i for i in range(ep+1)], reward_q, "out_reward.png", False)
     #plot_learning_curve([i for i in range(ep+1)], reward_q, "out_reward_.png")
 
