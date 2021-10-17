@@ -8,7 +8,7 @@ import DataGen as DG
 tf.disable_v2_behavior()
 tf.disable_eager_execution()
 tf.config.threading.set_inter_op_parallelism_threads(
-    64
+    64*2
 )
 
 class OUActionNoise(object):
