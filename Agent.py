@@ -379,7 +379,7 @@ class Agent(object):
             target.append(reward[j] + self.gamma*critic_value_[j]*done[j])
         target = np.reshape(target, (self.batch_size, 1))
 
-         _ = self.critic.train(state, goal, action, target)
+        _ = self.critic.train(state, goal, action, target)
 
         a_outs = self.actor.predict(state, goal)
         grads = self.critic.get_action_gradients(state, goal, a_outs)
