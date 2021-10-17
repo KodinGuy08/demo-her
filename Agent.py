@@ -382,18 +382,18 @@ class Agent(object):
 
         timer = time.time()
 
-        print("\n Post 1:", timer)
+        print("\n Post 1:", timer - time.time())
         _ = self.critic.train(state, goal, action, target)
         
         timer = time.time()
-        print("\n Post 2:", timer)
+        print("\n Post 2:", timer - time.time())
 
         a_outs = self.actor.predict(state, goal)
         grads = self.critic.get_action_gradients(state, goal, a_outs)
 
         self.actor.train(state, goal, grads[0])
         
-        print("\n Post 3:", timer)
+        print("\n Post 3:", timer - time.time())
 
         self.update_network_parameters()
 
