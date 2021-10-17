@@ -354,6 +354,8 @@ class Agent(object):
         demo_batch_size = 196
         state, action, reward, new_state, done, goal = [None]*6
 
+        timer = 0
+
         if self.memory.mem_cntr < self.batch_size:
             return
 
@@ -373,6 +375,7 @@ class Agent(object):
         done = combine(done, doned)
         goal = combine(goal, goald)
 
+        timer = time.time()
         critic_value_ = self.target_critic.predict(new_state, goal,
                                            self.target_actor.predict(new_state, goal))
         target = []
@@ -380,12 +383,20 @@ class Agent(object):
             target.append(reward[j] + self.gamma*critic_value_[j]*done[j])
         target = np.reshape(target, (self.batch_size, 1))
 
+        timer = time.time()
+
+        print("\n Post 1:" timer)
         _ = self.critic.train(state, goal, action, target)
+        
+        timer = time.time()
+        print("\n Post 2:" timer)
 
         a_outs = self.actor.predict(state, goal)
         grads = self.critic.get_action_gradients(state, goal, a_outs)
 
         self.actor.train(state, goal, grads[0])
+        
+        print("\n Post 3:" timer)
 
         self.update_network_parameters()
 
