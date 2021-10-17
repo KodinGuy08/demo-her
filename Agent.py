@@ -372,7 +372,6 @@ class Agent(object):
         done = combine(done, doned)
         goal = combine(goal, goald)
 
-        timer = time.time()
         critic_value_ = self.target_critic.predict(new_state, goal,
                                            self.target_actor.predict(new_state, goal))
         target = []
@@ -380,21 +379,12 @@ class Agent(object):
             target.append(reward[j] + self.gamma*critic_value_[j]*done[j])
         target = np.reshape(target, (self.batch_size, 1))
 
-
-        print("\n Post 1:", timer - time.time())
-        timer = time.time()
-        
-        _ = self.critic.train(state, goal, action, target)
-        
-        print("\n Post 2:", timer - time.time())
-        timer = time.time()
+         _ = self.critic.train(state, goal, action, target)
 
         a_outs = self.actor.predict(state, goal)
         grads = self.critic.get_action_gradients(state, goal, a_outs)
-
-        self.actor.train(state, goal, grads[0])
         
-        print("\n Post 3:", timer - time.time())
+        self.actor.train(state, goal, grads[0])
 
         self.update_network_parameters()
 
