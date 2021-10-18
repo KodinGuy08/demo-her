@@ -81,8 +81,6 @@ for ep in range(40000):
 
     score = []
 
-    ep_time = time.time()
-
     while ep_run:
         if is_env_on.exists() or ep > 20000 or True:
             pass
@@ -150,9 +148,14 @@ for ep in range(40000):
 
     
 
+    ep_time = time.time()
+
     for i in range(step_count):
         if not args[3] == "1":
             agent.learn()
+
+    ep_t.append(ep_time - time.time())
+
 
     if ep % 25 == 0 and ep > 0:
         agent.save_models()
@@ -166,10 +169,10 @@ for ep in range(40000):
     for s in score:
         if s > 0.92:
             success_count = success_count + 1
+            
     success_rates.append(success_count/len(score))
     reward_q.append(sum(rewards))
-
-    ep_t.append(ep_time - time.time())
+    print(ep_t[-1])
     print("Current Episode: ", ep, " Success Rate:", success_rates[-1], "Time Avg:", np.mean(ep_t[-100:]))
 
     print()
