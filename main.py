@@ -154,7 +154,7 @@ for ep in range(40000):
         if not args[3] == "1":
             agent.learn()
 
-    ep_t.append(ep_time - time.time())
+    ep_t.append(time.time() - ep_time)
 
 
     if ep % 25 == 0 and ep > 0:
