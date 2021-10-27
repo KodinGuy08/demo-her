@@ -370,7 +370,7 @@ class Agent(object):
             pass
         
         demo_batch_size = 196
-        state, action, reward, new_state, done, goal, critic_values = [None]*6
+        state, action, reward, new_state, done, goal, critic_values = [None]*7
 
         timer = 0
 
