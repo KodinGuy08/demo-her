@@ -5,8 +5,6 @@ from tensorflow.compat.v1.initializers import random_uniform
 
 import DataGen as DG
 
-import Thread
-
 tf.disable_v2_behavior()
 tf.disable_eager_execution()
 
@@ -43,9 +41,8 @@ class ReplayBuffer(object):
         self.action_memory = np.zeros((self.mem_size, n_actions))
         self.reward_memory = np.zeros(self.mem_size)
         self.terminal_memory = np.zeros(self.mem_size, dtype=np.float32)
-        self.critic_memory = np.zeros(self.mem_size)
 
-    def store_transition(self, state, action, reward, state_, done, goal, critic):
+    def store_transition(self, state, action, reward, state_, done, goal):
         index = self.mem_cntr % self.mem_size
         self.state_memory[index] = state
         self.new_state_memory[index] = state_
@@ -53,7 +50,6 @@ class ReplayBuffer(object):
         self.reward_memory[index] = reward
         self.terminal_memory[index] = 1 - done
         self.goal_memory[index] = goal
-        self.critic_memory[index] = critic
         self.mem_cntr += 1
 
     def sample_buffer(self, batch_size):
@@ -69,9 +65,7 @@ class ReplayBuffer(object):
 
         goal = self.goal_memory[batch]
 
-        critic = self.critic_memory[batch]
-        
-        return states, actions, rewards, states_, terminal, goal, critic
+        return states, actions, rewards, states_, terminal, goal
 
 class Actor(object):
     def __init__(self, lr, n_actions, name, input_dims, goal_dims, sess, fc_dims,
@@ -275,8 +269,6 @@ class Agent(object):
     def __init__(self, alpha, beta, input_dims, goal_dims, tau, env, gamma=0.99, n_actions=2,
                  max_size=1000000, layer_size=[400, 300],
                  batch_size=64, chkpt_dir='tmp/ddpg', Datagen=False, load=True):
-        self.lock_training = False
-
         self.env = env
         self.epsilon = 0
 
@@ -285,6 +277,8 @@ class Agent(object):
 
         self.memory = ReplayBuffer(max_size, input_dims, n_actions, goal_dims)
         self.demo_mem = ReplayBuffer(max_size, input_dims, n_actions, goal_dims)
+        if Datagen:
+            self.datagen()
 
         self.batch_size = batch_size
         self.sess = tf.Session()
@@ -325,9 +319,6 @@ class Agent(object):
 
         if load:
             self.load_models()
-            
-        if Datagen:
-            self.datagen()
 
         #if Datagen:
         #    for i in range(124):
@@ -345,18 +336,7 @@ class Agent(object):
             self.target_actor.sess.run(self.update_actor)
 
     def remember(self, state, action, reward, new_state, done, goal):
-        self.lock_training = True
-
-        t = Thread.Thread(0, "", self.remember_)
-        t.setParameters([state, action, reward, new_state, done, goal])
-        t.start()
-
-    def remember_(self, state, action, reward, new_state, done, goal):
-        critic_value_ = self.target_critic.predict([new_state], [goal],
-                                           self.target_actor.predict([new_state], [goal]))
-        self.memory.store_transition(state, action, reward, new_state, done, goal, critic_value_)
-        
-        self.lock_training = False
+        self.memory.store_transition(state, action, reward, new_state, done, goal)
 
     def choose_action(self, state, goal):
         state = state[np.newaxis, :]
@@ -368,22 +348,19 @@ class Agent(object):
         return mu_prime[0]
 
     def learn(self):
-        while self.lock_training:
-            pass
-        
         demo_batch_size = 196
-        state, action, reward, new_state, done, goal, critic_values = [None]*7
+        state, action, reward, new_state, done, goal = [None]*6
 
         timer = 0
 
         if self.memory.mem_cntr < self.batch_size:
             return
 
-        state, action, reward, new_state, done, goal, critic_values = \
+        state, action, reward, new_state, done, goal = \
             self.memory.sample_buffer(self.batch_size - demo_batch_size)
 
         dem_size = demo_batch_size
-        stated, actiond, rewardd, new_stated, doned, goald, critic_valuesd = self.demo_mem.sample_buffer(dem_size)
+        stated, actiond, rewardd, new_stated, doned, goald = self.demo_mem.sample_buffer(dem_size)
 
         def combine(in1, in2):
             return np.concatenate([in1.copy(), in2.copy()])
@@ -394,11 +371,9 @@ class Agent(object):
         new_state = combine(new_state, new_stated)
         done = combine(done, doned)
         goal = combine(goal, goald)
-        critic_value_ = combine(critic_values, critic_valuesd)
 
-        #critic_value_ = self.target_critic.predict(new_state, goal,
-        #                                   self.target_actor.predict(new_state, goal))
-
+        critic_value_ = self.target_critic.predict(new_state, goal,
+                                           self.target_actor.predict(new_state, goal))
         target = []
         for j in range(self.batch_size):
             target.append(reward[j] + self.gamma*critic_value_[j]*done[j])
@@ -466,8 +441,5 @@ class Agent(object):
                 goal = np.array(obs[step]['desired_goal']).copy()
                 g = np.array(obs[step]['achieved_goal']).copy()
 
-                a = self.target_actor.predict([ob_], [goal])
-                critic_value_ = self.target_critic.predict([ob_], [goal], a)
                 #print("\n\n", "## LOG ##", "\n", goal, "\n", g, "\n", self.subtract_array(g, goal))
-                self.demo_mem.store_transition(ob, act, reward, ob_, 1, self.subtract_array(g, goal), critic_value_)
-
+                self.demo_mem.store_transition(ob, act, reward, ob_, 1, self.subtract_array(g, goal))
