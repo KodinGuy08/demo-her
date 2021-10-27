@@ -350,8 +350,8 @@ class Agent(object):
         t.start()
 
     def remember_(self, state, action, reward, new_state, done, goal):
-        critic_value_ = self.target_critic.predict(new_state, goal,
-                                           self.target_actor.predict(new_state, goal))
+        critic_value_ = self.target_critic.predict([new_state], [goal],
+                                           self.target_actor.predict([new_state], [goal]))
         self.memory.store_transition(state, action, reward, new_state, done, goal, critic_value_)
         
         self.lock_training = False
@@ -465,7 +465,7 @@ class Agent(object):
                 g = np.array(obs[step]['achieved_goal']).copy()
 
                 a = self.target_actor.predict([ob_], [goal])
-                critic_value_ = self.target_critic.predict(ob_, goal, a)
+                critic_value_ = self.target_critic.predict([ob_], [goal], [a])
                 #print("\n\n", "## LOG ##", "\n", goal, "\n", g, "\n", self.subtract_array(g, goal))
                 self.demo_mem.store_transition(ob, act, reward, ob_, 1, self.subtract_array(g, goal), critic_value_)
 
