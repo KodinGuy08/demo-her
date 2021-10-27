@@ -463,8 +463,10 @@ class Agent(object):
 
                 goal = np.array(obs[step]['desired_goal']).copy()
                 g = np.array(obs[step]['achieved_goal']).copy()
-                
-                critic_value_ = self.target_critic.predict(ob_, goal, self.target_actor.predict(ob_, goal))
+
+                print(step)
+                a = self.target_actor.predict(ob_, goal)
+                critic_value_ = self.target_critic.predict(ob_, goal, a)
                 #print("\n\n", "## LOG ##", "\n", goal, "\n", g, "\n", self.subtract_array(g, goal))
                 self.demo_mem.store_transition(ob, act, reward, ob_, 1, self.subtract_array(g, goal), critic_value_)
 
