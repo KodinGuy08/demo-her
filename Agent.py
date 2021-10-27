@@ -69,6 +69,8 @@ class ReplayBuffer(object):
 
         goal = self.goal_memory[batch]
 
+        critic = self.critic_memory[batch]
+        
         return states, actions, rewards, states_, terminal, goal, critic
 
 class Actor(object):
